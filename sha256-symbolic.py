@@ -5,103 +5,65 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+
+import z3  # type: ignore
 from typing import TypeVar
 
 
 def main() -> None:
+    z3.set_param(verbose=2)
+
+    # Sanity check that the symbolic implementation is correct by passing
+    # fully determined input.
     assert (
         "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
-        == sha256hash(b"Hello World")
+        == sha256hash_(b"Hello World")
     )
     assert (
         "d25f01257c9890622d78cf9cf3362457ef75712bd187ae33b383f80d618d0f06"
-        == sha256hash(b"1" * 10000)
+        == sha256hash_(b"1" * 10000)
     )
 
 
-def sha256hash(val: bytes) -> str:
+type U8 = z3.BitVecRef
+type U32 = z3.BitVecRef
+
+
+def make_u8(n: int) -> U8:
+    return z3.BitVecVal(n, 8)
+
+
+def make_u32(n: int) -> U32:
+    return z3.BitVecVal(n, 32)
+
+
+def sha256hash(val: list[U8]) -> list[U8]:
     m = SHA256()
-    m.SHA256Input(frombytes(val))
+    m.SHA256Input(val)
     digest = m.SHA256Result()
-    return bytes.hex(tobytes(digest))
+    return [z3.simplify(b) for b in digest]
 
 
-# Proper parametric polymorphism (with type classes and checked at compile time
-# and actually enforced like in Haskell) is kind of nicer than this bolted on
-# mypy type system around dynamic subtyping...
-T = TypeVar("T", bound="FixedWidthUInt")
+# Use symbolic version with fixed fully determined input for checking that the
+# implementation is correct.
+def sha256hash_(val: bytes) -> str:
+    m = SHA256()
+    m.SHA256Input(bv_from_bytes(val))
+    digest = m.SHA256Result()
+    return hex_from_bv(digest)
 
 
-class FixedWidthUInt:
-    def __init__(self: T, val: int, width: int):
-        self.width = width
-        self.maxval = 2**width - 1
-        self.val = self.maxval & val
-
-    def __str__(self: T) -> str:
-        return str(self.val)
-
-    def __add__(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return self.__class__(self.val + other.val)
-
-    def __and__(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return self.__class__(self.val & other.val)
-
-    def __or__(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return self.__class__(self.val | other.val)
-
-    def __invert__(self: T) -> T:
-        return self.__class__(~self.val)
-
-    def __xor__(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return self.__class__(self.val ^ other.val)
-
-    def __lshift__(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return self.__class__(self.val << other.val)
-
-    def __rshift__(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return self.__class__(self.val >> other.val)
-
-    def rotate_left(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return (self << other) | (self >> self.__class__(self.width - other.val))
-
-    def rotate_right(self: T, other: T) -> T:
-        assert self.width == other.width, f"{self.width} != {other.width}"
-        return (self >> other) | (self << self.__class__(self.width - other.val))
+def bv_from_bytes(data: bytes) -> list[U8]:
+    return [make_u8(b) for b in data]
 
 
-# seems not easily possible
-# def from_u8(val: "U8", width: int) -> T:
+def bytes_from_bv(data: list[U8]) -> bytes:
+    return bytes([z3.simplify(b).as_long() for b in data])
 
 
-class U8(FixedWidthUInt):
-    def __init__(self, val: int):
-        super().__init__(val, 8)
-
-
-class U32(FixedWidthUInt):
-    def __init__(self, val: int):
-        super().__init__(val, 32)
-
-
-class U64(FixedWidthUInt):
-    def __init__(self, val: int):
-        super().__init__(val, 64)
-
-
-def frombytes(data: bytes) -> list[U8]:
-    return [U8(b) for b in data]
-
-
-def tobytes(data: list[U8]) -> bytes:
-    return bytes([b.val for b in data])
+def hex_from_bv(data: list[U8]) -> str:
+    bs = bytes_from_bv(data)
+    return bytes.hex(bs)
 
 
 SHA256_Message_Block_Size = 64
@@ -111,26 +73,34 @@ SHA256HashSizeBits = 256
 
 def SHA256_SIGMA0(word: U32) -> U32:
     return (
-        word.rotate_right(U32(2))
-        ^ word.rotate_right(U32(13))
-        ^ word.rotate_right(U32(22))
+        z3.RotateRight(word, make_u32(2))
+        ^ z3.RotateRight(word, make_u32(13))
+        ^ z3.RotateRight(word, make_u32(22))
     )
 
 
 def SHA256_SIGMA1(word: U32) -> U32:
     return (
-        word.rotate_right(U32(6))
-        ^ word.rotate_right(U32(11))
-        ^ word.rotate_right(U32(25))
+        z3.RotateRight(word, make_u32(6))
+        ^ z3.RotateRight(word, make_u32(11))
+        ^ z3.RotateRight(word, make_u32(25))
     )
 
 
 def SHA256_sigma0(word: U32) -> U32:
-    return word.rotate_right(U32(7)) ^ word.rotate_right(U32(18)) ^ (word >> U32(3))
+    return (
+        z3.RotateRight(word, make_u32(7))
+        ^ z3.RotateRight(word, make_u32(18))
+        ^ z3.LShR(word, make_u32(3))
+    )
 
 
 def SHA256_sigma1(word: U32) -> U32:
-    return word.rotate_right(U32(17)) ^ word.rotate_right(U32(19)) ^ (word >> U32(10))
+    return (
+        z3.RotateRight(word, make_u32(17))
+        ^ z3.RotateRight(word, make_u32(19))
+        ^ z3.LShR(word, make_u32(10))
+    )
 
 
 def SHA_Ch(x: U32, y: U32, z: U32) -> U32:
@@ -149,95 +119,97 @@ class SHA256:
 
     def __init__(self) -> None:
         self.Intermediate_Hash: list[U32] = [
-            U32(0x6A09E667),
-            U32(0xBB67AE85),
-            U32(0x3C6EF372),
-            U32(0xA54FF53A),
-            U32(0x510E527F),
-            U32(0x9B05688C),
-            U32(0x1F83D9AB),
-            U32(0x5BE0CD19),
+            make_u32(0x6A09E667),
+            make_u32(0xBB67AE85),
+            make_u32(0x3C6EF372),
+            make_u32(0xA54FF53A),
+            make_u32(0x510E527F),
+            make_u32(0x9B05688C),
+            make_u32(0x1F83D9AB),
+            make_u32(0x5BE0CD19),
         ]
         self.Length: int = 0
         self.Message_Block_Index: int = 0
-        self.Message_Block: list[U8] = [U8(0) for _ in range(SHA256_Message_Block_Size)]
+        self.Message_Block: list[U8] = [
+            make_u8(0) for _ in range(SHA256_Message_Block_Size)
+        ]
         self.Computed: bool = False
 
     def SHA256ProcessMessageBlock(self) -> None:
         K: list[U32] = [
-            U32(0x428A2F98),
-            U32(0x71374491),
-            U32(0xB5C0FBCF),
-            U32(0xE9B5DBA5),
-            U32(0x3956C25B),
-            U32(0x59F111F1),
-            U32(0x923F82A4),
-            U32(0xAB1C5ED5),
-            U32(0xD807AA98),
-            U32(0x12835B01),
-            U32(0x243185BE),
-            U32(0x550C7DC3),
-            U32(0x72BE5D74),
-            U32(0x80DEB1FE),
-            U32(0x9BDC06A7),
-            U32(0xC19BF174),
-            U32(0xE49B69C1),
-            U32(0xEFBE4786),
-            U32(0x0FC19DC6),
-            U32(0x240CA1CC),
-            U32(0x2DE92C6F),
-            U32(0x4A7484AA),
-            U32(0x5CB0A9DC),
-            U32(0x76F988DA),
-            U32(0x983E5152),
-            U32(0xA831C66D),
-            U32(0xB00327C8),
-            U32(0xBF597FC7),
-            U32(0xC6E00BF3),
-            U32(0xD5A79147),
-            U32(0x06CA6351),
-            U32(0x14292967),
-            U32(0x27B70A85),
-            U32(0x2E1B2138),
-            U32(0x4D2C6DFC),
-            U32(0x53380D13),
-            U32(0x650A7354),
-            U32(0x766A0ABB),
-            U32(0x81C2C92E),
-            U32(0x92722C85),
-            U32(0xA2BFE8A1),
-            U32(0xA81A664B),
-            U32(0xC24B8B70),
-            U32(0xC76C51A3),
-            U32(0xD192E819),
-            U32(0xD6990624),
-            U32(0xF40E3585),
-            U32(0x106AA070),
-            U32(0x19A4C116),
-            U32(0x1E376C08),
-            U32(0x2748774C),
-            U32(0x34B0BCB5),
-            U32(0x391C0CB3),
-            U32(0x4ED8AA4A),
-            U32(0x5B9CCA4F),
-            U32(0x682E6FF3),
-            U32(0x748F82EE),
-            U32(0x78A5636F),
-            U32(0x84C87814),
-            U32(0x8CC70208),
-            U32(0x90BEFFFA),
-            U32(0xA4506CEB),
-            U32(0xBEF9A3F7),
-            U32(0xC67178F2),
+            make_u32(0x428A2F98),
+            make_u32(0x71374491),
+            make_u32(0xB5C0FBCF),
+            make_u32(0xE9B5DBA5),
+            make_u32(0x3956C25B),
+            make_u32(0x59F111F1),
+            make_u32(0x923F82A4),
+            make_u32(0xAB1C5ED5),
+            make_u32(0xD807AA98),
+            make_u32(0x12835B01),
+            make_u32(0x243185BE),
+            make_u32(0x550C7DC3),
+            make_u32(0x72BE5D74),
+            make_u32(0x80DEB1FE),
+            make_u32(0x9BDC06A7),
+            make_u32(0xC19BF174),
+            make_u32(0xE49B69C1),
+            make_u32(0xEFBE4786),
+            make_u32(0x0FC19DC6),
+            make_u32(0x240CA1CC),
+            make_u32(0x2DE92C6F),
+            make_u32(0x4A7484AA),
+            make_u32(0x5CB0A9DC),
+            make_u32(0x76F988DA),
+            make_u32(0x983E5152),
+            make_u32(0xA831C66D),
+            make_u32(0xB00327C8),
+            make_u32(0xBF597FC7),
+            make_u32(0xC6E00BF3),
+            make_u32(0xD5A79147),
+            make_u32(0x06CA6351),
+            make_u32(0x14292967),
+            make_u32(0x27B70A85),
+            make_u32(0x2E1B2138),
+            make_u32(0x4D2C6DFC),
+            make_u32(0x53380D13),
+            make_u32(0x650A7354),
+            make_u32(0x766A0ABB),
+            make_u32(0x81C2C92E),
+            make_u32(0x92722C85),
+            make_u32(0xA2BFE8A1),
+            make_u32(0xA81A664B),
+            make_u32(0xC24B8B70),
+            make_u32(0xC76C51A3),
+            make_u32(0xD192E819),
+            make_u32(0xD6990624),
+            make_u32(0xF40E3585),
+            make_u32(0x106AA070),
+            make_u32(0x19A4C116),
+            make_u32(0x1E376C08),
+            make_u32(0x2748774C),
+            make_u32(0x34B0BCB5),
+            make_u32(0x391C0CB3),
+            make_u32(0x4ED8AA4A),
+            make_u32(0x5B9CCA4F),
+            make_u32(0x682E6FF3),
+            make_u32(0x748F82EE),
+            make_u32(0x78A5636F),
+            make_u32(0x84C87814),
+            make_u32(0x8CC70208),
+            make_u32(0x90BEFFFA),
+            make_u32(0xA4506CEB),
+            make_u32(0xBEF9A3F7),
+            make_u32(0xC67178F2),
         ]
 
-        W: list[U32] = [U32(0) for _ in range(64)]
+        W: list[U32] = [make_u32(0) for _ in range(64)]
 
         for t in range(0, 16):
-            W[t] |= U32(self.Message_Block[t * 4 + 0].val) << U32(3 * 8)
-            W[t] |= U32(self.Message_Block[t * 4 + 1].val) << U32(2 * 8)
-            W[t] |= U32(self.Message_Block[t * 4 + 2].val) << U32(1 * 8)
-            W[t] |= U32(self.Message_Block[t * 4 + 3].val) << U32(0 * 8)
+            W[t] |= z3.ZeroExt(24, self.Message_Block[t * 4 + 0]) << (3 * 8)
+            W[t] |= z3.ZeroExt(24, self.Message_Block[t * 4 + 1]) << (2 * 8)
+            W[t] |= z3.ZeroExt(24, self.Message_Block[t * 4 + 2]) << (1 * 8)
+            W[t] |= z3.ZeroExt(24, self.Message_Block[t * 4 + 3]) << (0 * 8)
 
         for t in range(16, 64):
             W[t] = (
@@ -270,6 +242,8 @@ class SHA256:
         self.Intermediate_Hash[6] += G
         self.Intermediate_Hash[7] += H
 
+        self.Intermediate_Hash = [z3.simplify(el) for el in self.Intermediate_Hash]
+
         self.Message_Block_Index = 0
 
     def SHA256Input(self, message_array: list[U8]) -> None:
@@ -290,7 +264,7 @@ class SHA256:
             self.Message_Block_Index += 1
 
             while self.Message_Block_Index < SHA256_Message_Block_Size:
-                self.Message_Block[self.Message_Block_Index] = U8(0)
+                self.Message_Block[self.Message_Block_Index] = make_u8(0)
                 self.Message_Block_Index += 1
 
             self.SHA256ProcessMessageBlock()
@@ -300,36 +274,38 @@ class SHA256:
             self.Message_Block_Index += 1
 
         while self.Message_Block_Index < (SHA256_Message_Block_Size - 8):
-            self.Message_Block[self.Message_Block_Index] = U8(0)
+            self.Message_Block[self.Message_Block_Index] = make_u8(0)
             self.Message_Block_Index += 1
 
-        self.Message_Block[56] = U8(self.Length >> (8 * 7))
-        self.Message_Block[57] = U8(self.Length >> (8 * 6))
-        self.Message_Block[58] = U8(self.Length >> (8 * 5))
-        self.Message_Block[59] = U8(self.Length >> (8 * 4))
-        self.Message_Block[60] = U8(self.Length >> (8 * 3))
-        self.Message_Block[61] = U8(self.Length >> (8 * 2))
-        self.Message_Block[62] = U8(self.Length >> (8 * 1))
-        self.Message_Block[63] = U8(self.Length >> (8 * 0))
+        self.Message_Block[56] = make_u8(self.Length >> (8 * 7))
+        self.Message_Block[57] = make_u8(self.Length >> (8 * 6))
+        self.Message_Block[58] = make_u8(self.Length >> (8 * 5))
+        self.Message_Block[59] = make_u8(self.Length >> (8 * 4))
+        self.Message_Block[60] = make_u8(self.Length >> (8 * 3))
+        self.Message_Block[61] = make_u8(self.Length >> (8 * 2))
+        self.Message_Block[62] = make_u8(self.Length >> (8 * 1))
+        self.Message_Block[63] = make_u8(self.Length >> (8 * 0))
 
         self.SHA256ProcessMessageBlock()
 
     def SHA256Finalize(self, Pad_Byte: U8) -> None:
         self.SHA256PadMessage(Pad_Byte)
         for i in range(SHA256_Message_Block_Size):
-            self.Message_Block[i] = U8(0)
+            self.Message_Block[i] = make_u8(0)
         self.Length = 0
         self.Computed = True
 
     def SHA256Result(self) -> list[U8]:
         if not self.Computed:
-            self.SHA256Finalize(U8(0x80))
+            self.SHA256Finalize(make_u8(0x80))
 
-        digest = [U8(0) for _ in range(SHA256HashSize)]
+        digest = [make_u8(0) for _ in range(SHA256HashSize)]
 
         for i in range(SHA256HashSize):
-            digest[i] = U8(
-                (self.Intermediate_Hash[i >> 2] >> U32(8 * (3 - (i & 0x03)))).val
+            digest[i] = z3.Extract(
+                8 - 1,
+                0,
+                z3.LShR(self.Intermediate_Hash[i >> 2], make_u32(8 * (3 - (i & 0x03)))),
             )
 
         return digest
