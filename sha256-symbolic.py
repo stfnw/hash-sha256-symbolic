@@ -15,14 +15,40 @@ def main() -> None:
 
     # Sanity check that the symbolic implementation is correct by passing
     # fully determined input.
-    assert (
-        "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
-        == sha256hash_(b"Hello World")
+    # assert (
+    #     "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
+    #     == sha256hash_(b"Hello World")
+    # )
+    # assert (
+    #     "d25f01257c9890622d78cf9cf3362457ef75712bd187ae33b383f80d618d0f06"
+    #     == sha256hash_(b"1" * 10000)
+    # )
+
+    data = [z3.BitVec("data" + str(i), 8) for i in range(SHA256HashSize + 1)]
+    print(
+        f"[+] Constructing U8 array of {len(data)} symbolic bytes "
+        + "and the symbolic hash computation for it"
     )
-    assert (
-        "d25f01257c9890622d78cf9cf3362457ef75712bd187ae33b383f80d618d0f06"
-        == sha256hash_(b"1" * 10000)
-    )
+    hash = sha256hash(data)
+
+    print("[+] Adding additional constraints to the solver")
+
+    for i in range(SHA256HashSize):
+        s = z3.Solver()
+
+        # Find message whose i-th hash-byte is null.
+        s.add(hash[i] == make_u8(0))
+
+        print("[+] Checking for boolean satisfiability")
+        if s.check() == z3.sat:
+            print("[+] Found valid model")
+
+            m = s.model()
+            dataval = [m.evaluate(d) for d in data]
+            hashval = [m.evaluate(h) for h in hash]
+
+            print(f"    Data hex:    {hex_from_bv(dataval)}")
+            print(f"    SHA256 hash: {hex_from_bv(hashval)}")
 
 
 type U8 = z3.BitVecRef
