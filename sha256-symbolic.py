@@ -59,7 +59,10 @@ def main() -> None:
     # s.add(z3.Extract(8 - 1, 4, hash[i]) == z3.Extract(8 - 1, 4, data[i]))  # Odd
 
     # Find message whose i-th input and hash byte have the same value.
-    s.add(hash[i] == data[i])
+    # s.add(hash[i] == data[i])
+
+    # Find message whose i-th and (i+1)-th hash byte have the same value.
+    s.add(hash[i] == hash[i+1])
 
     print("[+] Checking for boolean satisfiability")
     if s.check() == z3.sat:
