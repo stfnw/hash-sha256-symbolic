@@ -52,10 +52,14 @@ def main() -> None:
 
     s = z3.Solver()
 
-    # Find message whose i-th input and hash nibble have the same value.
     i = 0
-    s.add(z3.Extract(4 - 1, 0, hash[i]) == z3.Extract(4 - 1, 0, data[i]))  # Even
+
+    # Find message whose i-th input and hash nibble have the same value.
+    # s.add(z3.Extract(4 - 1, 0, hash[i]) == z3.Extract(4 - 1, 0, data[i]))  # Even
     # s.add(z3.Extract(8 - 1, 4, hash[i]) == z3.Extract(8 - 1, 4, data[i]))  # Odd
+
+    # Find message whose i-th input and hash byte have the same value.
+    s.add(hash[i] == data[i])
 
     print("[+] Checking for boolean satisfiability")
     if s.check() == z3.sat:
