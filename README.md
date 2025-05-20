@@ -1164,10 +1164,130 @@ SHA256 hash: 83c6f5a8c9ab72c3207d45fd6e1baf4c03399b3c92a2e6d3d153f11dfe51b7b7
                                                                          ||||
 ```
 
-Some hashes where the i-th, (i+1)-th, (i+2)-th, and (i+3)-th hash-nibble have the same value: 
+Some hashes where the i-th, (i+1)-th, (i+2)-th, and (i+3)-th hash-nibble have the same value:
 
 ```
-TODO
-```
+Data hex:    923fb47f5ac30129eef934cfe6a7f1fec5e7e8331079bbed4d817e5c275e1e5d96
+SHA256 hash: eeee8d794e0bdb30b03c9967bcc278223ecf781b6c61952969880ba9b20a36bb
+             ||||
 
-TODO longest subsequence of same bit value
+Data hex:    af0f33615a2fd4c463e3cc61537a933782740b16d345d20db88a249c4d8e5b21b8
+SHA256 hash: 2f88889991754d0268cca3253554d803d27a3cc746a3b61104b326f8f6602c31
+               ||||
+
+Data hex:    07dc3594cf9b73fdcfc93990ba384dacc96e74efb5e905e0da60bf75b9d29fad8f
+SHA256 hash: 6cd27777cc043d5370ba559450716a68788bd0ffe8fca3a44abf02376b6092ac
+                 ||||
+
+Data hex:    e8e0dbe69541671b7081f01534f2de2470cde97fecac217db28e0359bc2277f351
+SHA256 hash: fc900922225ae15d11486a09d8c845772c25c0e02648aded12f00986a7735fc1
+                   ||||
+
+Data hex:    a6401d91cb49fe4f6860870ce9c0309f385a5f4e1703fa7677c003297648c8108e
+SHA256 hash: 8bc5a0a033338cee36986a69ae0e42c775d52fbc73f1bd0d6c278716c86be2cf
+                     ||||
+
+Data hex:    8caa910fb12cbdffb7bc07f3f6a12250aa44aae3193a49c5b4e1d62095bb1d99f8
+SHA256 hash: 5673ee82603333124311a9e1574da0b11d66b5f2a8e26fd25fbff4a096d8d178
+                       ||||
+
+Data hex:    733bea3acc4d48bce42e217012bb7a59ae1f7414f8bbf1fcc3752307db55a831b6
+SHA256 hash: 376748030dfe77779ee1cebef55ebab7608849fa4d2544e472686dfa1451b79d
+                         ||||
+
+Data hex:    69340c8693c00d073fc52abffe90dd11974ff5120f6aa833e35c49fbf87ee539ab
+SHA256 hash: afd47ed3381ad5777769f53e05225c6303b34d5f39e766b9616918aeeabfed33
+                           ||||
+
+Data hex:    3896cf13fd4e6262ed1621988400a3de6f691a763ff26a0045f4eba47c2993b4f6
+SHA256 hash: e1180bbf0afd64e4666640e0fb954fbbf908a60ad5b7cdd7e420fb0b29915e63
+                             ||||
+
+Data hex:    44e986b8b7bbceaaea3b0040cba1119a54350e0f665902bb21537fdb4a45d7796b
+SHA256 hash: cd1e342b1baf18ef49aaaae137c83f4e1837582a2e5d06601365fc2b6d86ef24
+                               ||||
+
+Data hex:    089d996f052198e2a8de6f612e89e1af346212a034bc17b1c621c1dda830eac01d
+SHA256 hash: 64ca2178def852e46c456666edd72c2dd38fe53ced507c85e9079a441136b50e
+                                 ||||
+
+Data hex:    b6605e479bb02c434f24ee0a8b8545aa820874c0f6040afd41cd7f9791b94ee509
+SHA256 hash: 16eac8de8dc489c8b88ba1bbbba1b9b93dc23520c7e0f579fbb0b45e549035eb
+                                   ||||
+
+Data hex:    88239710d2ad07a492f229524515cd5f2d7d37ddcd20e93869fede267e2f536e07
+SHA256 hash: cce873c1cfe3137433a8254600001924999c21b0e9ceef39e74396a9e3c28e41
+                                     ||||
+
+Data hex:    c280ea23686e1c4b8bfeaedc04ab30add1a4d53693c64f8357eeb405d1a964d5ab
+SHA256 hash: 9a69fbcd7a8081c292c8067f46999961067ca0fe448cb66c30977e68ac42cdf5
+                                       ||||
+
+Data hex:    e1f2ceb9c07a4fdea9a390978f7a03b6b71fea6d3b58bfec052862c2b81b97679d
+SHA256 hash: e3b5ed39acea116fd11cb9fa9909ffff340155e5314e09cb4eea5e1a5b5a3919
+                                         ||||
+
+Data hex:    1b53ce1325386e34888b66ca343889960860aca7d5fea07f26b82f25c8d9bc7106
+SHA256 hash: 3f974b8e232f7140e9abe0e1aa2ae2aaaa04214d7c2a1f7fd371028e62dca59b
+                                           ||||
+
+Data hex:    f4322cad84172e27e649a2fb94d072c7a9186e89d0b7ead68d88c4b4aaa22830e8
+SHA256 hash: b7019e312f6151be493caf8aff662a8411111d7372691273b9e6da4d4ed83009
+                                             ||||
+
+Data hex:    050fff18658bcc79566df071499c3ffb0a533cd67e4bb226aa963653cd6a4a16d2
+SHA256 hash: 6a2d354c7faf522d70486648a02a79a29c555577b86d9617e2e7e067f084cc17
+                                               ||||
+
+Data hex:    731898c3c42fc3beda5ba3f64c19d2c930bb64edc79c52b8bd2ec8bd6b2cced318
+SHA256 hash: 4752e64c1ca7c0098a0ba02ed77dc65318df66667e7ed12a4ef20bb11d06d5a0
+                                                 ||||
+
+Data hex:    2231daa1d755fb4fd9320256a605ab595135f7e9d230193f3948e23288f1bae3c3
+SHA256 hash: 5527e3e034146941483121f90e25ff2d52975811118dc8f5a8d271fab0d011d4
+                                                   ||||
+
+Data hex:    cfffe9df9295f5d44a0cb842815dc7cec9c63180c1ea469d26e6b866d4641c4440
+SHA256 hash: c30664db4824b71ade8f3e4e6ab20d61a350e8d6ffff3591c8f830c3f42f9a25
+                                                     ||||
+
+Data hex:    7e020c26bead82cd6bdb0e7dcff3df00355d2b5bb6f0d2b87beffa9885c333860a
+SHA256 hash: e80810526f4c98a9fee82dc54a84edaa6654af35db88889f74b03d64ad57b88d
+                                                       ||||
+
+Data hex:    f22b776f72d9c1ba7660e68709ec564658ef00d3cbf99dee32fdd7f53de53dd24f
+SHA256 hash: a8207934ae177383803658d6b6e404610e6027af9f8699999da319da989c8be6
+                                                         ||||
+
+Data hex:    b3728772a3f2be889014ff5fd2a8a79ff9ae6a9ad78f694d875cc23811bded5787
+SHA256 hash: 26c918cefdd25bab976cefbf5c846d91790436a505318b333301c7be41b214d7
+                                                           ||||
+
+Data hex:    e6c77b9ac8a451681b4852b95796e2b5f604a8af1d6cb2c937b588de01b248c9f2
+SHA256 hash: 2959079690fbb4f40e895687bd0b451c9142b718c3032eabffff67161337ad3f
+                                                             ||||
+
+Data hex:    3717d9d90ac62a7770d58b08723b9a68398bceebf9b932cfee29d4316a010f2d69
+SHA256 hash: 941dc0322c8d51797029798876ea5430f424264663ba28bc74ffff922eaa37ce
+                                                               ||||
+
+Data hex:    306e632cc4fd213def415e1182f3ceb9ea201916fa2eae0c10bce7fba52d1dc410
+SHA256 hash: 76780813f35a37a4c5ba5ecbcd012836ab4a6b5cc181a1285e909999ce2e4088
+                                                                 ||||
+
+Data hex:    77436d5eed036acd5662bf84f6db3fe39626b38c5199d1aae72aecf4d41ea857d6
+SHA256 hash: 00ed596128f53a40394a1fcb205c621092ff9609a63685f003ac5a999953c31d
+                                                                   ||||
+
+Data hex:    3403c26fd565a99e158201c1d32f19a4b162140ccc0b5e35f439fcf1425fa7ffee
+SHA256 hash: cc905d5064481b284b26db41e5460ff150c8181103da701bcee99738222237a4
+                                                                     ||||
+
+Data hex:    7fd4473b82a5de57b606775a02ce8fc8d0eb2139ea4b8dee00b859982440bc7385
+SHA256 hash: 16e8ba56bdd47ed2f01c7f6a1f9388df71941eeb93d4b8ffaa1a8f718977779d
+                                                                       ||||
+
+Data hex:    de28abee1d70b966ba1e59c98da7d0033c587641c4d8ddece20def542811193c28
+SHA256 hash: 8c8953012cf12eab8e419ddbb645635646bfa7b758bbed225fcc382306ecaaaa
+                                                                         ||||
+```

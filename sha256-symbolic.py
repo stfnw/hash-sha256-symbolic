@@ -65,7 +65,12 @@ def main() -> None:
     # s.add(hash[i] == hash[i+1])
 
     # Find message where i-th hash-byte and its mirror have the same value.
-    s.add(hash[i] == hash[SHA256HashSize - 1 - i])
+    # s.add(hash[i] == hash[SHA256HashSize - 1 - i])
+
+    # Find message where i-th, (i+1)-th, (i+2)-th, and (i+3)-th hash-nibble have the same value.
+    s.add(z3.Extract(4 - 1, 0, hash[i]) == z3.Extract(8 - 1, 4, hash[i]))
+    s.add(z3.Extract(4 - 1, 0, hash[i]) == z3.Extract(4 - 1, 0, hash[i + 1]))
+    s.add(z3.Extract(4 - 1, 0, hash[i]) == z3.Extract(8 - 1, 4, hash[i + 1]))
 
     print("[+] Checking for boolean satisfiability")
     if s.check() == z3.sat:
