@@ -62,7 +62,10 @@ def main() -> None:
     # s.add(hash[i] == data[i])
 
     # Find message whose i-th and (i+1)-th hash byte have the same value.
-    s.add(hash[i] == hash[i+1])
+    # s.add(hash[i] == hash[i+1])
+
+    # Find message where i-th hash-byte and its mirror have the same value.
+    s.add(hash[i] == hash[SHA256HashSize - 1 - i])
 
     print("[+] Checking for boolean satisfiability")
     if s.check() == z3.sat:
