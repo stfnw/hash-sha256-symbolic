@@ -33,22 +33,40 @@ def main() -> None:
 
     print("[+] Adding additional constraints to the solver")
 
-    for i in range(SHA256HashSize):
-        s = z3.Solver()
+    # for i in range(SHA256HashSize):
+    #     s = z3.Solver()
+    #
+    #     # Find message whose i-th hash-byte is null.
+    #     s.add(hash[i] == make_u8(0))
+    #
+    #     print("[+] Checking for boolean satisfiability")
+    #     if s.check() == z3.sat:
+    #         print("[+] Found valid model")
+    #
+    #         m = s.model()
+    #         dataval = [m.evaluate(d) for d in data]
+    #         hashval = [m.evaluate(h) for h in hash]
+    #
+    #         print(f"    Data hex:    {hex_from_bv(dataval)}")
+    #         print(f"    SHA256 hash: {hex_from_bv(hashval)}")
 
-        # Find message whose i-th hash-byte is null.
-        s.add(hash[i] == make_u8(0))
+    s = z3.Solver()
 
-        print("[+] Checking for boolean satisfiability")
-        if s.check() == z3.sat:
-            print("[+] Found valid model")
+    # Find message whose i-th input and hash nibble have the same value.
+    i = 0
+    s.add(z3.Extract(4 - 1, 0, hash[i]) == z3.Extract(4 - 1, 0, data[i]))  # Even
+    # s.add(z3.Extract(8 - 1, 4, hash[i]) == z3.Extract(8 - 1, 4, data[i]))  # Odd
 
-            m = s.model()
-            dataval = [m.evaluate(d) for d in data]
-            hashval = [m.evaluate(h) for h in hash]
+    print("[+] Checking for boolean satisfiability")
+    if s.check() == z3.sat:
+        print("[+] Found valid model")
 
-            print(f"    Data hex:    {hex_from_bv(dataval)}")
-            print(f"    SHA256 hash: {hex_from_bv(hashval)}")
+        m = s.model()
+        dataval = [m.evaluate(d) for d in data]
+        hashval = [m.evaluate(h) for h in hash]
+
+        print(f"    Data hex:    {hex_from_bv(dataval)}")
+        print(f"    SHA256 hash: {hex_from_bv(hashval)}")
 
 
 type U8 = z3.BitVecRef
